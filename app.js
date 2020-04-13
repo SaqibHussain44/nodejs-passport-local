@@ -9,6 +9,7 @@ require('dotenv').config();
 var app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
 const conn = 'mongodb://dbuser:eaglepii123@localhost:27017/eaglepii';
 const connection = mongoose.createConnection(conn, {
   useNewUrlParser: true,
@@ -16,11 +17,12 @@ const connection = mongoose.createConnection(conn, {
 });
 
 const UserSchema = new mongoose.Schema({
-    username: String,
-    hash: String,
-    salt: String
+  username: String,
+  hash: String,
+  salt: String
 });
 const User = connection.model('User', UserSchema);
+
 passport.use(new LocalStrategy(function(username, password, cb) {
   User.findOne({ username: username })
     .then((user) => {
@@ -47,6 +49,7 @@ passport.deserializeUser(function(id, cb) {
     cb(null, user);
   });
 });
+
 const sessionStore = new MongoStore({ mongooseConnection: connection, collection: 'sessions' })
 app.use(session({
   //secret: process.env.SECRET,
@@ -72,12 +75,10 @@ app.get('/login', (req, res, next) => {
   <br><br><input type="submit" value="Submit"></form>';
   res.send(form);
 });
-
 app.post('/login', passport.authenticate('local', { failureRedirect: '/login-failure', successRedirect: 'login-success' }),
   (err, req, res, next) => {
     if (err) next(err);
 });
-
 app.get('/register', (req, res, next) => {
   const form = '<h1>Register Page</h1><form method="post" action="register">\
     Enter Username:<br><input type="text" name="username">\
